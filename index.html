@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>我的第一个网页</title>
+    <style>
+        body {
+            font-family: "PingFang SC", Arial, sans-serif;
+            background: #f5f5f5;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+            font-size: 18px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 24px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>你好,这是我的第一个网页!</h1>
+    <p>点击下面的按钮试试看</p>
+    <button onclick="sayHi()">点我一下</button>
+
+    <script>
+        function sayHi() {
+            alert("你成功用代码写出了一个网页!");
+        }
+    </script>
+</body>
+</html>
