@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>摇骰子工具</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:url("bg.jpg") center center/cover no-repeat;
+    font-family:"Microsoft YaHei",sans-serif;
+}
+
+.container{
+    background:rgba(0,0,0,.55);
+    padding:40px;
+    border-radius:20px;
+    text-align:center;
+    backdrop-filter:blur(6px);
+    color:white;
+    box-shadow:0 0 20px rgba(0,0,0,.5);
+}
+
+h1{
+    font-size:42px;
+    margin-bottom:30px;
+    text-shadow:2px 2px 10px black;
+}
+
+#dice{
+    font-size:80px;
+    margin:20px 0;
+}
+
+#result{
+    font-size:36px;
+    margin-top:20px;
+    color:#FFD700;
+}
+
+button{
+    margin-top:25px;
+    padding:15px 40px;
+    font-size:22px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    background:#d4af37;
+    color:black;
+    font-weight:bold;
+    transition:.25s;
+}
+
+button:hover{
+    transform:scale(1.08);
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>🔥你旋哥复活谁🔥</h1>
+
+<div id="dice">🎲</div>
+
+<button onclick="rollDice()">
+摇骰子
+</button>
+
+<div id="result">等待摇骰子...</div>
+
+</div>
+
+<script>
+
+function rollDice(){
+
+    let num=Math.floor(Math.random()*6)+1;
+
+    let emoji=[
+        "",
+        "⚀",
+        "⚁",
+        "⚂",
+        "⚃",
+        "⚄",
+        "⚅"
+    ];
+
+    document.getElementById("dice").innerHTML=emoji[num];
+
+    document.getElementById("result").innerHTML="点数："+num;
+
+}
+
+</script>
+
+</body>
+</html>
