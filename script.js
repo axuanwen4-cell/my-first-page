@@ -588,6 +588,10 @@ function(e){
 
 
 // 点击掉落
+// ============================
+// 稳定掉落系统
+// ============================
+
 
 game.addEventListener(
 "click",
@@ -596,7 +600,6 @@ function(e){
 
     if(gameOver)
     return;
-
 
 
     createBall(
@@ -610,11 +613,12 @@ function(e){
     );
 
 
-
     nextLevel=randomLevel();
 
 
     updatePreview();
+
+
 
 
 });
