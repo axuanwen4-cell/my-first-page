@@ -438,3 +438,61 @@ button{
 
 
 }
+/* =====================
+提示球
+===================== */
+
+
+#nextTip{
+
+position:absolute;
+
+right:20px;
+
+top:20px;
+
+padding:10px 20px;
+
+border-radius:30px;
+
+color:white;
+
+font-size:18px;
+
+font-weight:bold;
+
+z-index:20;
+
+box-shadow:
+0 5px 15px rgba(0,0,0,.2);
+
+}
+
+
+
+/* =====================
+合成粒子
+===================== */
+
+
+.particle{
+
+position:absolute;
+
+width:12px;
+
+height:12px;
+
+border-radius:50%;
+
+pointer-events:none;
+
+z-index:100;
+
+transition:
+
+transform .8s,
+
+opacity .8s;
+
+}
