@@ -22,7 +22,7 @@ const {
 
 const engine = Engine.create();
 
-engine.gravity.y = 1;
+engine.gravity.y = 0.6;
 
 
 
@@ -517,12 +517,107 @@ drawText();
 let canDrop=true;
 
 
+// ============================
+// 新掉落系统
+// ============================
+
+
+const previewBall =
+document.getElementById("previewBall");
+
+
+// 更新预览球
+
+function updatePreview(){
+
+
+    previewBall.innerHTML =
+    names[nextLevel];
+
+
+    previewBall.style.background =
+    ballColors[nextLevel];
+
+
+    previewBall.style.width =
+    sizes[nextLevel]*2+"px";
+
+
+    previewBall.style.height =
+    sizes[nextLevel]*2+"px";
+
+}
+
+
+
+updatePreview();
+
+
+
+
+// 鼠标移动
 
 game.addEventListener(
-
-"click",
-
+"mousemove",
 function(e){
+
+
+    previewBall.style.left =
+    e.clientX+"px";
+
+
+});
+
+
+
+
+// 手机移动
+
+game.addEventListener(
+"touchmove",
+function(e){
+
+
+    previewBall.style.left =
+    e.touches[0].clientX+"px";
+
+
+});
+
+
+
+
+// 点击掉落
+
+game.addEventListener(
+"click",
+function(e){
+
+
+    if(gameOver)
+    return;
+
+
+
+    createBall(
+
+        nextLevel,
+
+        e.clientX,
+
+        150
+
+    );
+
+
+
+    nextLevel=randomLevel();
+
+
+    updatePreview();
+
+
+});
 
 
 
@@ -566,12 +661,6 @@ function(e){
 
 
 // 手机触摸
-
-game.addEventListener(
-
-"touchstart",
-
-function(e){
 
 
     if(!canDrop)
