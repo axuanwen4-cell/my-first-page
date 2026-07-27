@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>合成大西瓜 · 人名版</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html,body { width:100%; height:100%; overflow:hidden; font-family: "PingFang SC","Microsoft YaHei",sans-serif; user-select:none; }
+
+  /* ---------- 通用背景 ---------- */
+  .bg-fresh {
+    position:fixed; inset:0;
+    background: linear-gradient(180deg,#eafff0 0%, #d7f7ea 35%, #c9f2e6 65%, #bdeee0 100%);
+    overflow:hidden;
+  }
+  .floatie {
+    position:absolute; border-radius:50%;
+    opacity:0.55; filter: blur(0px);
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); }
+    50%  { transform: translateY(-30px) translateX(15px) rotate(180deg); }
+    100% { transform: translateY(0) translateX(0) rotate(360deg); }
+  }
+  .cloud {
+    position:absolute; background:#fff; opacity:0.8; border-radius:50%;
+    filter: blur(1px);
+    animation: drift linear infinite;
+  }
+  @keyframes drift {
+    0% { transform: translateX(-10vw); }
+    100% { transform: translateX(110vw); }
+  }
+
+  /* ---------- 首页 ---------- */
+  #startScreen {
+    position:fixed; inset:0; z-index:20;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding:20px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .title-wrap { position:relative; margin-bottom:6px; }
+  .game-title {
+    font-size: 40px; font-weight:900; letter-spacing:2px;
+    color:#2f6b4f;
+    text-shadow: 2px 2px 0 #fff, 4px 4px 8px rgba(47,107,79,0.25);
+    position:relative; z-index:2;
+  }
+  .game-subtitle {
+    font-size:16px; color:#4a8a68; margin-top:8px; margin-bottom:24px; font-weight:600;
+    background: rgba(255,255,255,0.55); padding:6px 16px; border-radius:20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  #startBtn {
+    padding: 16px 52px; font-size:22px; font-weight:800; color:#fff; border:none;
+    border-radius: 50px; cursor:pointer;
+    background: linear-gradient(135deg,#7ed6a5,#4bb384);
+    box-shadow: 0 8px 20px rgba(75,179,132,0.45), inset 0 -4px 0 rgba(0,0,0,0.08);
+    transition: transform .15s ease;
+    margin-bottom:16px;
+    letter-spacing:3px;
+  }
+  #startBtn:active { transform: scale(0.94); }
+
+  .rules-box {
+    margin-top:10px; max-width:380px; background:rgba(255,255,255,0.65);
+    border-radius:16px; padding:14px 18px; font-size:13px; color:#3a6b52; line-height:1.7;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .rules-box b { color:#2f6b4f; }
+
+  .credit { position:absolute; bottom:14px; font-size:11px; color:#6ea98a; opacity:0.8; }
+
+  .music-btn {
+    position:absolute; top:16px; right:16px; z-index:30;
+    width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
+    background: rgba(255,255,255,0.75); font-size:20px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- 游戏页 ---------- */
+  #gameScreen { position:fixed; inset:0; z-index:10; display:none; flex-direction:column; align-items:center; }
+  #topBar {
+    width:100%; max-width:480px; display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; box-sizing:border-box;
+  }
+  #scoreBox {
+    background:#fff; border-radius:14px; padding:8px 16px; box-shadow:0 3px 10px rgba(0,0,0,0.08);
+    font-weight:800; color:#2f6b4f; font-size:15px;
+  }
+  #nextBox {
+    background:#fff; border-radius:14px; padding:6px 14px; box-shadow:0 3px 10px rgba(0,0,0,0.08);
+    display:flex; align-items:center; gap:8px; font-size:12px; color:#5a8f74; font-weight:700;
+  }
+  #nextPreview { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:800; }
+  #restartTop {
+    background:#fff; border:none; border-radius:14px; padding:8px 14px; font-weight:800; color:#e07a5f;
+    box-shadow:0 3px 10px rgba(0,0,0,0.08); cursor:pointer; font-size:13px;
+  }
+
+  #canvasWrap {
+    position:relative; margin-top:6px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow:hidden;
+    background: linear-gradient(180deg,#f2fffb,#e3f9ee);
+    border: 4px solid #ffffff;
+  }
+  #gameCanvas { display:block; touch-action:none; }
+
+  #dangerLine {
+    position:absolute; left:0; right:0; border-top: 2px dashed rgba(224,122,95,0.55);
+    pointer-events:none;
+  }
+
+  #gameOverOverlay {
+    position:absolute; inset:0; background: rgba(255,255,255,0.85); backdrop-filter: blur(3px);
+    display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:15;
+  }
+  #gameOverOverlay h2 { font-size:26px; color:#e07a5f; margin-bottom:10px; }
+  #finalScore { font-size:18px; color:#2f6b4f; font-weight:800; margin-bottom:20px; }
+  #restartBtn {
+    padding:12px 34px; font-size:17px; font-weight:800; color:#fff; border:none; border-radius:40px; cursor:pointer;
+    background: linear-gradient(135deg,#7ed6a5,#4bb384); box-shadow:0 6px 16px rgba(75,179,132,0.4);
+  }
+
+  #hint { margin-top:8px; font-size:12px; color:#5a8f74; opacity:0.85; }
+</style>
+</head>
+<body>
+
+<!-- ============ 首页 ============ -->
+<div id="startScreen">
+  <div class="bg-fresh" id="startBg"></div>
+  <button class="music-btn" id="musicBtnStart">🔊</button>
+
+  <div class="title-wrap">
+    <div class="game-title">合成大西瓜</div>
+  </div>
+  <div class="game-subtitle">✨ 人名合成特别版 ✨</div>
+
+  <button id="startBtn">开始游戏</button>
+
+  <div class="rules-box">
+    <b>玩法说明：</b><br>
+    点击 / 触摸屏幕控制掉落位置，松手或点击即可落下。<br>
+    两个<b>相同的名字</b>碰到一起会合成为<b>下一个人</b>，<br>
+    一路合成，最终目标是合成出传说中的 <b>温阿旋</b> ！<br>
+    小心别让名字堆到顶部红线哦～
+  </div>
+
+  <div class="credit">清新解压 · 合成小游戏</div>
+</div>
+
+<!-- ============ 游戏页 ============ -->
+<div id="gameScreen">
+  <div class="bg-fresh"></div>
+  <button class="music-btn" id="musicBtnGame" style="top:16px;right:16px;">🔊</button>
+
+  <div id="topBar">
+    <div id="scoreBox">分数：<span id="scoreVal">0</span></div>
+    <div id="nextBox">下一个 <div id="nextPreview"></div></div>
+    <button id="restartTop">重开</button>
+  </div>
+
+  <div id="canvasWrap">
+    <div id="dangerLine"></div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOverOverlay">
+      <h2>游戏结束啦～</h2>
+      <div id="finalScore">最终分数：0</div>
+      <button id="restartBtn">再来一局</button>
+    </div>
+  </div>
+  <div id="hint">移动手指/鼠标选位置，松开即可掉落</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+/* ===================== 数据：人名 & 等级 ===================== */
+const LEVELS = [
+  { name:"张灵通", r:18, color:["#ffd6e0","#ff8fa3"] },
+  { name:"邵文博", r:24, color:["#ffe8c2","#ffb84d"] },
+  { name:"刘帅",   r:31, color:["#d9f2c4","#8fd35c"] },
+  { name:"李子强", r:39, color:["#c4f0e8","#4fd0b8"] },
+  { name:"王秋实", r:48, color:["#c4dcff","#5c9bff"] },
+  { name:"薛甜甜", r:58, color:["#e3c9ff","#b16bff"] },
+  { name:"李亚晴", r:70, color:["#ffd9c4","#ff8f4d"] },
+  { name:"温阿旋", r:88, color:["#fff2b0","#ffcf33"] } // 最终形态
+];
+const DROPPABLE_MAX = 4; // 掉落时只出现前几级，避免一上来就很大
+
+/* ===================== 背景装饰（首页 & 游戏页共用样式） ===================== */
+function decorateBg(container){
+  const colors = ["#bdeee0","#a8e6cf","#ffd3b6","#ffaaa5","#c9f2e6","#d5f0a2"];
+  for(let i=0;i<10;i++){
+    const el = document.createElement("div");
+    el.className = "floatie";
+    const size = 20 + Math.random()*50;
+    el.style.width = size+"px";
+    el.style.height = size+"px";
+    el.style.left = Math.random()*100+"%";
+    el.style.top = Math.random()*100+"%";
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (4+Math.random()*4)+"s";
+    el.style.animationDelay = (Math.random()*3)+"s";
+    container.appendChild(el);
+  }
+  for(let i=0;i<4;i++){
+    const c = document.createElement("div");
+    c.className = "cloud";
+    const w = 60+Math.random()*80, h = w*0.4;
+    c.style.width = w+"px"; c.style.height = h+"px";
+    c.style.top = (5+Math.random()*30)+"%";
+    c.style.animationDuration = (25+Math.random()*20)+"s";
+    c.style.animationDelay = (-Math.random()*20)+"s";
+    container.appendChild(c);
+  }
+}
+decorateBg(document.getElementById("startBg"));
+
+/* ===================== 背景音乐（Web Audio 生成，无需外部文件） ===================== */
+let audioCtx = null;
+let bgmOn = true;
+let bgmTimer = null;
+const scale = [261.63,293.66,329.63,392.00,440.00,523.25]; // C大调五声音阶
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === "suspended") audioCtx.resume();
+}
+function playNote(freq, time, dur, vol){
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = "sine";
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0, time);
+  g.gain.linearRampToValueAtTime(vol, time+0.05);
+  g.gain.exponentialRampToValueAtTime(0.001, time+dur);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(time); o.stop(time+dur+0.05);
+}
+function startBGM(){
+  ensureAudio();
+  if(bgmTimer) return;
+  let step = 0;
+  const loop = ()=>{
+    if(!bgmOn) return;
+    const t = audioCtx.currentTime;
+    const note = scale[Math.floor(Math.random()*scale.length)] * (step%8<4 ? 1 : 0.5);
+    playNote(note, t, 1.1, 0.045);
+    if(step % 4 === 0){
+      playNote(scale[0]/2, t, 1.6, 0.03);
+    }
+    step++;
+  };
+  loop();
+  bgmTimer = setInterval(loop, 750);
+}
+function stopBGM(){
+  if(bgmTimer){ clearInterval(bgmTimer); bgmTimer = null; }
+}
+function toggleBGM(btn){
+  bgmOn = !bgmOn;
+  btn.textContent = bgmOn ? "🔊" : "🔇";
+  document.getElementById("musicBtnStart").textContent = bgmOn ? "🔊" : "🔇";
+  document.getElementById("musicBtnGame").textContent = bgmOn ? "🔊" : "🔇";
+  if(bgmOn) startBGM(); else stopBGM();
+}
+document.getElementById("musicBtnStart").onclick = ()=>{ ensureAudio(); toggleBGM(document.getElementById("musicBtnStart")); };
+document.getElementById("musicBtnGame").onclick = ()=>{ ensureAudio(); toggleBGM(document.getElementById("musicBtnGame")); };
+
+function playPop(level){
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  const base = 220 + level*40;
+  playNote(base, t, 0.35, 0.08);
+  playNote(base*1.5, t+0.03, 0.3, 0.05);
+}
+function playDrop(){
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  playNote(180, t, 0.15, 0.05);
+}
+
+/* ===================== 游戏逻辑 ===================== */
+const { Engine, World, Bodies, Body, Events, Composite, Common } = Matter;
+
+let engine, world;
+let CANVAS_W = 380, CANVAS_H = 560;
+const WALL_T = 16;
+let canvas, ctx;
+let currentBody = null;   // 正在瞄准、尚未掉落的预览体（sensor）
+let nextLevelIdx = 0;
+let canDrop = true;
+let score = 0;
+let gameOver = false;
+let dangerTimer = 0;
+const DANGER_Y = 70; // 距离顶部多少像素算危险区
+let pointerX = CANVAS_W/2;
+
+function sizeCanvas(){
+  const maxW = Math.min(window.innerWidth*0.92, 420);
+  const maxH = window.innerHeight*0.68;
+  let w = maxW;
+  let h = w * 1.45;
+  if(h > maxH){ h = maxH; w = h/1.45; }
+  CANVAS_W = Math.round(w);
+  CANVAS_H = Math.round(h);
+  canvas.width = CANVAS_W;
+  canvas.height = CANVAS_H;
+  canvas.style.width = CANVAS_W+"px";
+  canvas.style.height = CANVAS_H+"px";
+  document.getElementById("dangerLine").style.top = DANGER_Y+"px";
+}
+
+function randomDropLevel(){
+  return Math.floor(Math.random()*DROPPABLE_MAX);
+}
+
+function initGame(){
+  canvas = document.getElementById("gameCanvas");
+  ctx = canvas.getContext("2d");
+  sizeCanvas();
+
+  engine = Engine.create();
+  world = engine.world;
+  engine.gravity.y = 1.0;
+
+  const wallOpts = { isStatic:true, restitution:0.2, friction:0.4, render:{visible:false} };
+  World.add(world, [
+    Bodies.rectangle(-WALL_T/2, CANVAS_H/2, WALL_T, CANVAS_H*2, wallOpts),
+    Bodies.rectangle(CANVAS_W+WALL_T/2, CANVAS_H/2, WALL_T, CANVAS_H*2, wallOpts),
+    Bodies.rectangle(CANVAS_W/2, CANVAS_H+WALL_T/2, CANVAS_W*2, WALL_T, wallOpts)
+  ]);
+
+  score = 0;
+  gameOver = false;
+  dangerTimer = 0;
+  document.getElementById("scoreVal").textContent = "0";
+  document.getElementById("gameOverOverlay").style.display = "none";
+
+  nextLevelIdx = randomDropLevel();
+  updateNextPreview();
+  spawnPreview(randomDropLevel());
+
+  Events.on(engine, "collisionStart", handleCollisions);
+
+  requestAnimationFrame(gameLoop);
+}
+
+function updateNextPreview(){
+  const box = document.getElementById("nextPreview");
+  const lv = LEVELS[nextLevelIdx];
+  box.style.background = `linear-gradient(135deg, ${lv.color[0]}, ${lv.color[1]})`;
+  box.textContent = lv.name.slice(0,1);
+}
+
+function spawnPreview(levelIdx){
+  const lv = LEVELS[levelIdx];
+  currentBody = {
+    levelIdx: levelIdx,
+    x: pointerX,
+    r: lv.r
+  };
+}
+
+function clampPointer(x){
+  const r = currentBody ? currentBody.r : 20;
+  return Math.max(r+2, Math.min(CANVAS_W-r-2, x));
+}
+
+function createFruitBody(x, y, levelIdx){
+  const lv = LEVELS[levelIdx];
+  const body = Bodies.circle(x, y, lv.r, {
+    restitution: 0.15,
+    friction: 0.5,
+    frictionAir: 0.001,
+    density: 0.0015,
+  });
+  body.levelIdx = levelIdx;
+  body.mergeLock = false;
+  return body;
+}
+
+function doDrop(){
+  if(!canDrop || gameOver || !currentBody) return;
+  canDrop = false;
+  const idx = currentBody.levelIdx;
+  const x = clampPointer(currentBody.x);
+  const body = createFruitBody(x, LEVELS[idx].r+4, idx);
+  World.add(world, body);
+  playDrop();
+
+  currentBody = null;
+  setTimeout(()=>{
+    nextLevelIdx = randomDropLevel();
+  }, 0);
+
+  setTimeout(()=>{
+    const useIdx = nextLevelIdx;
+    updateNextPreview();
+    spawnPreview(useIdx);
+    canDrop = true;
+  }, 480);
+}
+
+function handleCollisions(evt){
+  const pairs = evt.pairs;
+  for(const p of pairs){
+    const a = p.bodyA, b = p.bodyB;
+    if(a.isStatic || b.isStatic) continue;
+    if(a.levelIdx === undefined || b.levelIdx === undefined) continue;
+    if(a.levelIdx !== b.levelIdx) continue;
+    if(a.mergeLock || b.mergeLock) continue;
+    if(a.levelIdx >= LEVELS.length-1) continue; // 已是最终形态
+
+    a.mergeLock = true; b.mergeLock = true;
+
+    const midX = (a.position.x + b.position.x)/2;
+    const midY = (a.position.y + b.position.y)/2;
+    const newIdx = a.levelIdx + 1;
+
+    World.remove(world, a);
+    World.remove(world, b);
+
+    const merged = createFruitBody(midX, midY, newIdx);
+    World.add(world, merged);
+
+    score += (newIdx+1)*15;
+    document.getElementById("scoreVal").textContent = score;
+    playPop(newIdx);
+
+    if(newIdx === LEVELS.length-1){
+      score += 500;
+      document.getElementById("scoreVal").textContent = score;
+    }
+  }
+}
+
+function checkGameOver(){
+  const bodies = Composite.allBodies(world).filter(b=>!b.isStatic);
+  let danger = false;
+  for(const b of bodies){
+    const speed = Math.hypot(b.velocity.x, b.velocity.y);
+    if(b.position.y - b.circleRadius < DANGER_Y && speed < 0.15){
+      danger = true;
+      break;
+    }
+  }
+  if(danger){
+    dangerTimer += 1/60;
+    if(dangerTimer > 1.4){
+      triggerGameOver();
+    }
+  } else {
+    dangerTimer = Math.max(0, dangerTimer - 2/60);
+  }
+}
+
+function triggerGameOver(){
+  gameOver = true;
+  document.getElementById("finalScore").textContent = "最终分数：" + score;
+  document.getElementById("gameOverOverlay").style.display = "flex";
+}
+
+/* ---------- 绘制 ---------- */
+function drawCircleFruit(x,y,levelIdx,radiusOverride){
+  const lv = LEVELS[levelIdx];
+  const r = radiusOverride || lv.r;
+  const grad = ctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1,x,y,r);
+  grad.addColorStop(0, lv.color[0]);
+  grad.addColorStop(1, lv.color[1]);
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.lineWidth = Math.max(1.5, r*0.05);
+  ctx.strokeStyle = "rgba(255,255,255,0.9)";
+  ctx.stroke();
+
+  let fontSize = Math.min(r*0.62, (r*1.9)/lv.name.length);
+  fontSize = Math.max(fontSize, 9);
+  ctx.font = `800 ${fontSize}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "rgba(0,0,0,0.25)";
+  ctx.shadowBlur = 3;
+  ctx.fillText(lv.name, x, y+1);
+  ctx.shadowBlur = 0;
+}
+
+function gameLoop(){
+  Engine.update(engine, 1000/60);
+  if(!gameOver) checkGameOver();
+
+  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+
+  // 危险线
+  ctx.setLineDash([6,5]);
+  ctx.strokeStyle = "rgba(224,122,95,0.5)";
+  ctx.beginPath();
+  ctx.moveTo(0,DANGER_Y);
+  ctx.lineTo(CANVAS_W,DANGER_Y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const bodies = Composite.allBodies(world).filter(b=>!b.isStatic);
+  for(const b of bodies){
+    drawCircleFruit(b.position.x, b.position.y, b.levelIdx, b.circleRadius);
+  }
+
+  if(currentBody && !gameOver){
+    currentBody.x = clampPointer(pointerX);
+    ctx.globalAlpha = 0.85;
+    drawCircleFruit(currentBody.x, LEVELS[currentBody.levelIdx].r+4, currentBody.levelIdx);
+    ctx.globalAlpha = 1;
+    ctx.setLineDash([4,4]);
+    ctx.strokeStyle = "rgba(90,159,124,0.4)";
+    ctx.beginPath();
+    ctx.moveTo(currentBody.x, 0);
+    ctx.lineTo(currentBody.x, CANVAS_H);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+/* ---------- 输入事件 ---------- */
+function bindInput(){
+  const wrap = document.getElementById("canvasWrap");
+  function getX(evt){
+    const rect = canvas.getBoundingClientRect();
+    const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+    return (clientX - rect.left) * (CANVAS_W/rect.width);
+  }
+  wrap.addEventListener("mousemove", (e)=>{ pointerX = getX(e); });
+  wrap.addEventListener("touchmove", (e)=>{ pointerX = getX(e); e.preventDefault(); }, {passive:false});
+  wrap.addEventListener("click", (e)=>{ pointerX = getX(e); doDrop(); });
+  wrap.addEventListener("touchend", (e)=>{ doDrop(); e.preventDefault(); }, {passive:false});
+}
+
+/* ===================== 页面切换 ===================== */
+document.getElementById("startBtn").onclick = ()=>{
+  ensureAudio();
+  if(bgmOn) startBGM();
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("gameScreen").style.display = "flex";
+  document.querySelectorAll(".floatie,.cloud").forEach(el=>{}); // 保留装饰
+  const gameBgHost = document.querySelector("#gameScreen .bg-fresh");
+  decorateBg(gameBgHost);
+  initGame();
+  bindInput();
+};
+
+document.getElementById("restartBtn").onclick = ()=>{
+  restartGame();
+};
+document.getElementById("restartTop").onclick = ()=>{
+  restartGame();
+};
+
+function restartGame(){
+  Composite.clear(world, false);
+  World.add(world, [
+    Bodies.rectangle(-WALL_T/2, CANVAS_H/2, WALL_T, CANVAS_H*2, {isStatic:true}),
+    Bodies.rectangle(CANVAS_W+WALL_T/2, CANVAS_H/2, WALL_T, CANVAS_H*2, {isStatic:true}),
+    Bodies.rectangle(CANVAS_W/2, CANVAS_H+WALL_T/2, CANVAS_W*2, WALL_T, {isStatic:true})
+  ]);
+  score = 0;
+  gameOver = false;
+  dangerTimer = 0;
+  document.getElementById("scoreVal").textContent = "0";
+  document.getElementById("gameOverOverlay").style.display = "none";
+  nextLevelIdx = randomDropLevel();
+  updateNextPreview();
+  spawnPreview(randomDropLevel());
+  canDrop = true;
+}
+
+window.addEventListener("resize", ()=>{
+  if(canvas) sizeCanvas();
+});
+</script>
+</body>
+</html>
