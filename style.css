@@ -496,3 +496,41 @@ transform .8s,
 opacity .8s;
 
 }
+/* 预览球 */
+
+#previewBall{
+
+position:absolute;
+
+top:110px;
+
+left:50%;
+
+transform:translateX(-50%);
+
+width:50px;
+
+height:50px;
+
+border-radius:50%;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:12px;
+
+font-weight:bold;
+
+color:#333;
+
+z-index:30;
+
+box-shadow:
+0 5px 15px rgba(0,0,0,.2);
+
+pointer-events:none;
+
+}
